@@ -6,7 +6,8 @@ import storage
 import os.path
 import time
 import sys
-from subprocess import run, CalledProcessError, check_output, DEVNULL, PIPE
+import datetime as dt
+from subprocess import run, PIPE
 
 class MySQLBackup:
     def __init__(self):
@@ -51,7 +52,7 @@ class MySQLBackup:
             self.cleanup()
             sys.exit(1)
 
-        date = int(time.time())
+        date = dt.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
         my_backup = os.path.join(self.config['backup_dir'], f'{db}_{date}.sql.gz')
         self.files.append(my_backup)
         dump = [f'mysqldump --defaults-file={my_cnf} {db} | gzip -9 > {my_backup}']
