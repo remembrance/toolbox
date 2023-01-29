@@ -1,21 +1,47 @@
 ARG ALPINE_VERSION=3.17
 FROM alpine:$ALPINE_VERSION
 
+RUN adduser -D unprivileged
+
 # base packages
 RUN apk -U add \
+  gcc \
+  musl-dev \
+  python3-dev \
+  libgit2-dev \
+  py3-pip \
+  \
+  bash \
+  ca-certificates \
   bind-tools \
   mariadb-client \
+  libgit2 \
   python3 \
-  python3-dev \
-  py3-pip \
   coreutils \
   nmap \
   tcpdump \
   ngrep \
   mtr \
-  vim
+  vim \
+  openssh \
+  \
+  && \
+  \
+  pip install \
+  boto3 \
+  pygit2 \
+  PyGithub \
+  dnspython \
+  kubernetes \
+  \
+  && \
+  \
+  apk del \
+  gcc \
+  musl-dev \
+  python3-dev \
+  libgit2-dev
 
-# script dependencies
-RUN pip install boto3
+USER unprivileged
 
 COPY manifest /
