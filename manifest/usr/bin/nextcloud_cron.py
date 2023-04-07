@@ -45,11 +45,13 @@ try:
             k8s.connect_get_namespaced_pod_exec,
             name,
             namespace,
+            container_name="nextcloud",
             command=exec_command,
             stderr=True,
             stdin=False,
             stdout=True,
             tty=False,
+            _preload_content=False,
         )
 
         print(
