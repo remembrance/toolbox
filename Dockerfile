@@ -29,7 +29,7 @@ RUN apk -U add \
   \
   pip install \
   boto3 \
-  pygit2 \
+  pygit2==1.11.1 \
   PyGithub \
   dnspython \
   kubernetes \
