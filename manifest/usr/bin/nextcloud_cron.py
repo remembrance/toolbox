@@ -30,7 +30,9 @@ try:
     resp = k8s.list_namespaced_pod(namespace=namespace, label_selector=label_selector)
 
     for x in resp.items:
+        print(x)
         name = x.spec.hostname
+        print(name)
 
         resp = k8s.read_namespaced_pod(name=name, namespace=namespace)
 
