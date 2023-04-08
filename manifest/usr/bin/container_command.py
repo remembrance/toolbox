@@ -17,20 +17,13 @@ except client.ApiException as e:
     print(e)
     exit(11)
 
-label_name = getenv("LABEL_APP_NAME", None)
-label_component = getenv("LABEL_APP_COMPONENT", None)
+selector = getenv("POD_SELECTOR", None)
 namespace = getenv("K8S_NAMESPACE", None)
 container = getenv("CONTAINER_NAME", None)
+command = getenv("CONTAINER_COMMAND", None)
 
-if None in [label_name, label_component, namespace, container]:
+if None in [selector, namespace, container, command]:
     raise ValueError("environment variables missing")
-
-selector = ",".join(
-    [
-        f"app.kubernetes.io/name={label_name}",
-        f"app.kubernetes.io/component={label_component}",
-    ]
-)
 
 try:
     resp = k8s.list_namespaced_pod(namespace=namespace, label_selector=selector)
@@ -39,11 +32,10 @@ try:
     for name in pods:
         resp = k8s.read_namespaced_pod(name=name, namespace=namespace)
 
-        # https://docs.nextcloud.com/server/latest/admin_manual/configuration_server/background_jobs_configuration.html#cron
         exec_command = [
             "/bin/sh",
             "-c",
-            'su -p www-data -s /bin/sh -c "php -f /var/www/html/cron.php"',
+            command,
         ]
 
         resp = stream.stream(
