@@ -18,23 +18,21 @@ s3_bucket = getenv("S3_BUCKET")
 backup_dir = "/tmp"
 openldap_conf_dir = "/opt/bitnami/openldap/etc/slapd.d"
 timestamp = dt.strftime(dt.now(), "%Y-%m-%d-%H-%M-%S")
-data_backup_file = ""
-cfg_backup_file = ""
+data_backup_file = join(backup_dir, f"ldap_data_backup_{timestamp}.ldif.gz")
+cfg_backup_file = join(backup_dir, f"ldap_cfg_backup_{timestamp}.ldif.gz")
 
 data = ContainerCommand(
     selector, namespace, container, f"slapcat -n 2 -F {openldap_conf_dir}"
 ).run()
 if data:
-    data_backup_file = f"ldap_backup_{timestamp}.ldif.gz"
-    with gzip.open(f"{join(backup_dir, data_backup_file)}", "wb") as f:
+    with gzip.open(data_backup_file, "wb") as f:
         f.write(data)
 
 cfg = ContainerCommand(
     selector, namespace, container, f"slapcat -b cn=config -F {openldap_conf_dir}"
 ).run()
 if cfg:
-    cfg_backup_file = f"ldap_cfg_backup_{timestamp}.ldif.gz"
-    with gzip.open(f"{join(backup_dir, cfg_backup_file)}", "wb") as f:
+    with gzip.open(cfg_backup_file, "wb") as f:
         f.write(cfg)
 
 storage = S3Storage(s3_url, s3_bucket, s3_user, s3_password)

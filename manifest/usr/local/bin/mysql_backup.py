@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from os import getenv
+from os.path import isfile
 
 from kubectlme import MySQLBackup, S3Storage
 
@@ -16,7 +17,7 @@ s3_bucket = getenv("S3_BUCKET")
 
 backup = MySQLBackup(host, user, password, database)
 file = backup.run()
-if file:
+if isfile(file):
     storage = S3Storage(s3_url, s3_bucket, s3_user, s3_password)
-    storage.upload_file(file)
+    storage.upload(file)
 backup.cleanup()

@@ -47,7 +47,7 @@ class MySQLBackup:
                         )
                     )
             except IOError as e:
-                print(f"error creating my.cnf file for mysqldump: {e}")
+                print(f"error creating my.cnf file for mysqldump: {e}", file=stderr)
 
         def invalid_db_name(name):
             return any(not (c.isalnum() or c == "_") for c in name)
@@ -57,19 +57,19 @@ class MySQLBackup:
         self.files.append(my_cnf)
 
         if invalid_db_name(self.db):
-            print(f"error: db name {self.db} seems invalid")
+            print(f"error: db name {self.db} seems invalid", file=stderr)
             self.cleanup()
-            sys.exit(1)
+            return
 
         date = dt.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         my_backup = os.path.join(self.dir, f"{self.db}_{date}.sql.gz")
         self.files.append(my_backup)
         dump = [f"mysqldump --defaults-file={my_cnf} {self.db} | gzip -9 > {my_backup}"]
         proc = run(dump, stderr=PIPE, shell=True)
-        print(proc.stderr.decode("utf-8"))
+        print(proc.stderr.decode("utf-8"), file=stderr)
         if proc.returncode != 0:
             self.cleanup()
-            sys.exit(1)
+            return
 
         return my_backup
 
@@ -171,7 +171,10 @@ class S3Storage(object):
             config=boto3.session.Config(signature_version=self.signature_version),
             verify=self.verify,
         )
-        storage.Bucket(self.bucket).upload_file(local_path, basename(local_path))
+        try:
+            storage.Bucket(self.bucket).upload_file(local_path, basename(local_path))
+        except storage.meta.client.exceptions.ClientError as e:
+            print(f"boto3 error: {e}")
 
 
 class ContainerCommand(object):
