@@ -3,6 +3,8 @@ FROM alpine:$ALPINE_VERSION
 
 RUN adduser -D unprivileged
 
+ENV PYTHONPATH=/usr/local/lib/python
+
 # base packages
 RUN apk -U add \
   gcc \
